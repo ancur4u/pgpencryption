@@ -1,0 +1,47 @@
+ankurparashar@ankurs-MacBook-Pro ~ % gpg --gen-key
+gpg (GnuPG/MacGPG2) 2.2.20; Copyright (C) 2020 Free Software Foundation, Inc.
+This is free software: you are free to change and redistribute it.
+There is NO WARRANTY, to the extent permitted by law.
+
+Note: Use "gpg --full-generate-key" for a full featured key generation dialog.
+
+GnuPG needs to construct a user ID to identify your key.
+
+Real name: mule-poc
+Email address: mule-poc@gmail.com
+You selected this USER-ID:
+    "mule-poc <mule-poc@gmail.com>"
+
+Change (N)ame, (E)mail, or (O)kay/(Q)uit? O
+We need to generate a lot of random bytes. It is a good idea to perform
+some other action (type on the keyboard, move the mouse, utilize the
+disks) during the prime generation; this gives the random number
+generator a better chance to gain enough entropy.
+We need to generate a lot of random bytes. It is a good idea to perform
+some other action (type on the keyboard, move the mouse, utilize the
+disks) during the prime generation; this gives the random number
+generator a better chance to gain enough entropy.
+gpg: key 9A7B263A6AA0373F marked as ultimately trusted
+gpg: directory '/Users/ankurparashar/.gnupg/openpgp-revocs.d' created
+gpg: revocation certificate stored as '/Users/ankurparashar/.gnupg/openpgp-revocs.d/67B8C36A60F8321B9AC5AECB9A7B263A6AA0373F.rev'
+public and secret key created and signed.
+
+pub   rsa2048 2020-08-28 [SC] [expires: 2022-08-28]
+      67B8C36A60F8321B9AC5AECB9A7B263A6AA0373F
+uid                      mule-poc <mule-poc@gmail.com>
+sub   rsa2048 2020-08-28 [E] [expires: 2022-08-28]
+
+ankurparashar@ankurs-MacBook-Pro ~ % gpg --list-secret-keys --keyid-format LONG
+gpg: checking the trustdb
+gpg: marginals needed: 3  completes needed: 1  trust model: pgp
+gpg: depth: 0  valid:   1  signed:   0  trust: 0-, 0q, 0n, 0m, 0f, 1u
+gpg: next trustdb check due at 2022-08-28
+/Users/ankurparashar/.gnupg/pubring.kbx
+---------------------------------------
+sec   rsa2048/9A7B263A6AA0373F 2020-08-28 [SC] [expires: 2022-08-28]
+      67B8C36A60F8321B9AC5AECB9A7B263A6AA0373F
+uid                 [ultimate] mule-poc <mule-poc@gmail.com>
+ssb   rsa2048/5E5792446695608B 2020-08-28 [E] [expires: 2022-08-28]
+
+ankurparashar@ankurs-MacBook-Pro ~ % gpg --output /Users/ankurparashar/Desktop//mule-poc_public.gpg --export mule-poc@gmail.com 
+ankurparashar@ankurs-MacBook-Pro ~ % gpg --export-secret-keys 67B8C36A60F8321B9AC5AECB9A7B263A6AA0373F > /Users/ankurparashar/Desktop/mule-poc_private.gpg

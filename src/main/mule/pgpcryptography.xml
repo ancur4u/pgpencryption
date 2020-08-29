@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:crypto="http://www.mulesoft.org/schema/mule/crypto"
+	xmlns:http="http://www.mulesoft.org/schema/mule/http"
+	xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/crypto http://www.mulesoft.org/schema/mule/crypto/current/mule-crypto.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+	<http:listener-config name="HTTP_Listener_config" doc:name="HTTP Listener config" doc:id="76e5c929-8e35-4cd7-ab27-bebdabd272a7" >
+		<http:listener-connection host="0.0.0.0" port="8081" />
+	</http:listener-config>
+	<crypto:pgp-config name="Crypto_Pgp" doc:name="Crypto Pgp" doc:id="fc5885a4-49e9-42c5-98a4-1a37a723e3e0" publicKeyring="/Users/ankurparashar/AnypointStudio/studio-workspace/pgpcryptography/src/main/resources/Ankur Parashar_0x1068D17F_public.asc" >
+		<crypto:pgp-key-infos >
+			<crypto:pgp-asymmetric-key-info keyId="pgpkey" fingerprint="D431A466E51CF08C184810F419B613CF1068D17F"/>
+		</crypto:pgp-key-infos>
+	</crypto:pgp-config>
+	<crypto:pgp-config name="Crypto_Pgp_decrypt" doc:name="Crypto Pgp" doc:id="ced8dcf7-bdfe-4758-ab0c-ab7f3571fbfd" privateKeyring="/Users/ankurparashar/AnypointStudio/studio-workspace/pgpcryptography/src/main/resources/Ankur Parashar_0x1068D17F_SECRET.asc" >
+		<crypto:pgp-key-infos >
+			<crypto:pgp-asymmetric-key-info keyId="pgp" fingerprint="D431A466E51CF08C184810F419B613CF1068D17F" passphrase="password" />
+		</crypto:pgp-key-infos>
+	</crypto:pgp-config>
+	<crypto:pgp-config name="Crypto_Pgp1" doc:name="Crypto Pgp" doc:id="d953f616-f515-469b-8ea4-be6a0f863875" publicKeyring="Ankur Parashar_0x1068D17F_public.asc" privateKeyring="Ankur Parashar_0x1068D17F_SECRET.asc" >
+		<crypto:pgp-key-infos >
+			<crypto:pgp-asymmetric-key-info keyId="publickey" fingerprint="D431A466E51CF08C184810F419B613CF1068D17F" />
+			<crypto:pgp-asymmetric-key-info keyId="privatekey" fingerprint="D431A466E51CF08C184810F419B613CF1068D17F" passphrase="password" />
+		</crypto:pgp-key-infos>
+	</crypto:pgp-config>
+	<crypto:pgp-config name="Crypto_Pgp_sign" doc:name="Crypto Pgp" doc:id="b146796d-54a0-4c61-8745-54e153949b17" publicKeyring="Ankur Parashar_0x1068D17F_public.asc" privateKeyring="Ankur Parashar_0x1068D17F_SECRET.asc" >
+		<crypto:pgp-key-infos >
+			<crypto:pgp-asymmetric-key-info keyId="privatekey" fingerprint="D431A466E51CF08C184810F419B613CF1068D17F" passphrase="password" />
+			<crypto:pgp-asymmetric-key-info keyId="publickey" fingerprint="D431A466E51CF08C184810F419B613CF1068D17F" />
+		</crypto:pgp-key-infos>
+	</crypto:pgp-config>
+	<flow name="pgpcryptographyFlow" doc:id="c23dab90-3b06-43ed-ab9d-c183332a7a60" >
+		<http:listener doc:name="Listener" doc:id="75994fe9-8541-4579-a826-64becd10b385" config-ref="HTTP_Listener_config" path="/pgpencrypt" allowedMethods="POST"/>
+		<crypto:pgp-encrypt doc:name="Pgp encrypt" doc:id="35869e81-4aef-4c16-b433-a5f0a3d67088" config-ref="Crypto_Pgp" keyId="pgpkey"/>
+		<logger level="INFO" doc:name="Logger" doc:id="f2d1b56f-bf8e-473b-8520-253589d03f2f" message="Encrypted message: #[payload]"/>
+		<crypto:pgp-decrypt doc:name="Pgp decrypt" doc:id="6197e828-b482-4eeb-a799-1272b0a8f939" config-ref="Crypto_Pgp_decrypt"/>
+		<logger level="INFO" doc:name="Logger" doc:id="b66b4cc4-be65-4651-8bf6-346fa4b4be51" message="Decrypted message: #[payload]"/>
+	</flow>
+	<flow name="pgpcryptography_signed" doc:id="65168ff7-a036-4541-a84d-0faae2fcc52c" >
+		<http:listener doc:name="Listener" doc:id="2758ecc9-3f30-46bd-afe1-ba4bd5f38db8" config-ref="HTTP_Listener_config" path="/pgpencryptsign" allowedMethods="POST"/>
+		<crypto:pgp-encrypt-and-sign doc:name="Pgp encrypt and sign" doc:id="e58c363d-73b5-4fcd-95a1-e7c087e8c5cd" config-ref="Crypto_Pgp1">
+			<crypto:encryption-key-selection keyId="publickey"/>
+			<crypto:sign-key-selection keyId="privatekey" />
+		</crypto:pgp-encrypt-and-sign>
+		<crypto:calculate-checksum doc:name="Calculate checksum" doc:id="87249c8b-723e-4030-91d1-195ea6941943" target="checksum"/>
+		<logger level="INFO" doc:name="Logger" doc:id="49756174-3435-46ff-9219-32ecdcc6adb9" message="#[payload]"/>
+		<crypto:validate-checksum doc:name="Validate checksum" doc:id="f119508f-140e-4fd9-949a-672589bfb00e" expected="#[vars.checksum]"/>
+		<crypto:pgp-decrypt doc:name="Pgp decrypt" doc:id="53e92dd6-f440-442a-aac3-b931c3de9699" config-ref="Crypto_Pgp_decrypt"/>
+		<logger level="INFO" doc:name="Logger" doc:id="803ddadf-d6a8-4555-b68b-6a2c4f30505f" message="#[payload]"/>
+	</flow>
+	<flow name="pgpcryptographyFlow1" doc:id="24ae9259-0081-421f-8b80-750e13fde2d4" >
+		<http:listener doc:name="Listener" doc:id="0439ad01-67cc-43e1-be3d-9aa6eb8fd003" config-ref="HTTP_Listener_config" path="/pgpbinary"/>
+		<logger level="INFO" doc:name="Logger" doc:id="1c8001b9-3647-4fce-8674-cc60f8b28f0f" message="Received payload:  #[payload]" />
+		<crypto:pgp-encrypt-binary doc:name="Pgp encrypt binary" doc:id="880e97af-9e90-419d-a824-22a5aad451b1" config-ref="Crypto_Pgp1" keyId="publickey"/>
+		<logger level="INFO" doc:name="Logger" doc:id="cb4110a3-3fb4-4b61-b4ca-568ebf3f39c4" message="Encrypted: #[payload]"/>
+		<crypto:pgp-binary-to-armored doc:name="Pgp binary to armored" doc:id="55b652d9-fe61-41da-9c6c-019e58943df6" />
+		<logger level="INFO" doc:name="Logger" doc:id="f2649fca-5ba3-4993-9a1e-45706b9e408e" message="Armored : #[payload]"/>
+		<crypto:pgp-decrypt doc:name="Pgp decrypt" doc:id="75adda84-7693-4e50-b9ef-ac1cd4b5069b" config-ref="Crypto_Pgp_decrypt"/>
+		<logger level="INFO" doc:name="Logger" doc:id="813f8ee2-5ff2-48ca-a71d-7fc2c3cde426" message="Decrypted: #[payload]"/>
+	</flow>
+	<flow name="pgpcryptography_sign" doc:id="187fe981-6177-4786-a43a-6748a92f2741" >
+		<http:listener doc:name="Listener" doc:id="2834fbd9-acdc-4518-8967-e602fb8d31cb" config-ref="HTTP_Listener_config" path="/pgpsign" allowedMethods="POST"/>
+		<logger level="INFO" doc:name="Logger" doc:id="1f0c1ea4-f0d4-405e-a53a-3161f8a94511" message="Received payload: #[payload]"/>
+		<crypto:pgp-sign doc:name="Pgp sign" doc:id="aae314d8-93bc-4030-bc8a-09e26c6b07bd" config-ref="Crypto_Pgp_sign" keyId="privatekey" target="pgpsigned"/>
+		<logger level="INFO" doc:name="Logger" doc:id="0d919851-9b91-442b-8c18-e32d8d5c5f58" message="Converted after Pgp Sign: #[vars.pgpsigned]" />
+		<crypto:pgp-encrypt doc:name="Pgp encrypt" doc:id="674660d9-5d63-495e-bbc0-bcbf90212fb9" config-ref="Crypto_Pgp_sign" keyId="publickey"/>
+		<logger level="INFO" doc:name="Logger" doc:id="9e3abef3-d9c4-4656-bc7d-8da47b5f919b" message="Encrypted payload: #[payload]"/>
+		<crypto:pgp-decrypt doc:name="Pgp decrypt" doc:id="acb8dff5-111d-4936-9d3b-ada2987198f2" config-ref="Crypto_Pgp_sign" validateIfSignatureFound="true">
+		</crypto:pgp-decrypt>
+		<logger level="INFO" doc:name="Logger" doc:id="c42a1675-a5b0-4bb1-b9fd-2bc1d3ea15c3" message="Decrypted payload: #[payload]"/>
+	</flow>
+</mule>
